@@ -1,3 +1,10 @@
 bin/*
 *.o
 lib*
+
+# CMake
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+cmake_install.cmake
+install_manifest.txt
