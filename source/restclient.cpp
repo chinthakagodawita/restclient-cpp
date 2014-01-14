@@ -27,6 +27,7 @@ void RestClient::setAuth(const std::string& user,const std::string& password){
   RestClient::user_pass += user+":"+password;
 }
 
+RestClient::headermap RestClient::custom_headers;
 /**
  * Clear any set custom headers.
  */
