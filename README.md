@@ -23,6 +23,12 @@ The response is of type RestClient::response and has three attributes:
     RestClient::response.body // HTTP response body
     RestClient::response.headers // HTTP response headers
 
+### CMake
+A CMake configuration file is provided to ease linking in CMake projects. To make use of this, simple clone this project as a submodule and add the following line into your CMakeLists.txt file:
+
+    add_subdirectory(restclient-cpp)
+
+You can then link against the `restclient-cpp`. Don't forget to link against libcurl too.
 
 ## Dependencies
 - [libcurl][]
