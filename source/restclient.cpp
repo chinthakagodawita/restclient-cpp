@@ -343,8 +343,8 @@ size_t RestClient::write_callback(void *data, size_t size, size_t nmemb,
 
 /**
  * @brief header callback for libcurl
- * 
- * @param data returned (header line) 
+ *
+ * @param data returned (header line)
  * @param size of data
  * @param nmemb memblock
  * @param userdata pointer to user data object to save headr data
@@ -357,12 +357,12 @@ size_t RestClient::header_callback(void *data, size_t size, size_t nmemb,
   r = reinterpret_cast<RestClient::response*>(userdata);
   std::string header(reinterpret_cast<char*>(data), size*nmemb);
   size_t seperator = header.find_first_of(":");
-  if ( std::string::npos == seperator ) { 
-    //roll with non seperated headers... 
-    trim(header); 
-    if ( 0 == header.length() ){ 
-	return (size * nmemb); //blank line;
-    } 
+  if ( std::string::npos == seperator ) {
+    //roll with non seperated headers...
+    trim(header);
+    if ( 0 == header.length() ){
+      return (size * nmemb); //blank line;
+    }
     r->headers[header] = "present";
   } else {
     std::string key = header.substr(0, seperator);
