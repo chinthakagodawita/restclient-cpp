@@ -11,7 +11,7 @@ project (restclient-cpp)
 include_directories (${restclient-cpp_SOURCE_DIR})
 
 # Add sources as a 'restclient-cpp' library.
-add_library (restclient-cpp
+add_library (restclient-cpp STATIC
   include/restclient.h
   source/restclient.cpp
 )
