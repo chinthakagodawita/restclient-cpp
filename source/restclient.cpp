@@ -26,6 +26,33 @@ void RestClient::setAuth(const std::string& user,const std::string& password){
   RestClient::user_pass.clear();
   RestClient::user_pass += user+":"+password;
 }
+
+/**
+ * Clear any set custom headers.
+ */
+void RestClient::clearCustomHeaders() {
+  RestClient::custom_headers.clear();
+}
+/**
+ * Set custom headers
+ *
+ * @param headers A <string, string> map of custom headers to set.
+ */
+void RestClient::setCustomHeaders(const headermap& headers) {
+  RestClient::clearCustomHeaders();
+  RestClient::custom_headers = headers;
+}
+/**
+ * Adds a single custom header
+ *
+ * @param key The header key.
+ * @param value The header value to use.
+ */
+void RestClient::addCustomHeader(const std::string& key, const std::string& value) {
+  // RestClient::custom_headers.insert(std::pair<std::string, std::string>(key, value));
+  RestClient::custom_headers[key] = value;
+}
+
 /**
  * @brief HTTP GET method
  *
@@ -49,6 +76,10 @@ RestClient::response RestClient::get(const std::string& url)
     if(RestClient::user_pass.length()>0){
       curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
       curl_easy_setopt(curl, CURLOPT_USERPWD, RestClient::user_pass.c_str());
+    }
+    // Add custom headers if we have them.
+    if (!RestClient::custom_headers.empty()) {
+      set_curl_custom_headers(curl);
     }
     /** set user agent */
     curl_easy_setopt(curl, CURLOPT_USERAGENT, RestClient::user_agent);
@@ -94,8 +125,8 @@ RestClient::response RestClient::post(const std::string& url,
 {
   /** create return struct */
   RestClient::response ret;
-  /** build content-type header string */
-  std::string ctype_header = "Content-Type: " + ctype;
+  // Add content-type header in custom headers list.
+  RestClient::addCustomHeader("Content-Type", ctype);
 
   // use libcurl
   CURL *curl;
@@ -126,10 +157,10 @@ RestClient::response RestClient::post(const std::string& url,
     curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, RestClient::header_callback);
     /** callback object for headers */
     curl_easy_setopt(curl, CURLOPT_HEADERDATA, &ret);
-    /** set content-type header */
-    curl_slist* header = NULL;
-    header = curl_slist_append(header, ctype_header.c_str());
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header);
+    // Add custom headers if we have them.
+    if (!RestClient::custom_headers.empty()) {
+      set_curl_custom_headers(curl);
+    }
     /** perform the actual query */
     res = curl_easy_perform(curl);
     if (res != 0)
@@ -162,8 +193,8 @@ RestClient::response RestClient::put(const std::string& url,
 {
   /** create return struct */
   RestClient::response ret;
-  /** build content-type header string */
-  std::string ctype_header = "Content-Type: " + ctype;
+  // Add content-type header in custom headers list.
+  RestClient::addCustomHeader("Content-Type", ctype);
 
   /** initialize upload object */
   RestClient::upload_object up_obj;
@@ -205,10 +236,10 @@ RestClient::response RestClient::put(const std::string& url,
     curl_easy_setopt(curl, CURLOPT_INFILESIZE,
                      static_cast<long>(up_obj.length));
 
-    /** set content-type header */
-    curl_slist* header = NULL;
-    header = curl_slist_append(header, ctype_header.c_str());
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header);
+    // Add custom headers if we have them.
+    if (!RestClient::custom_headers.empty()) {
+      set_curl_custom_headers(curl);
+    }
     /** perform the actual query */
     res = curl_easy_perform(curl);
     if (res != 0)
@@ -252,6 +283,10 @@ RestClient::response RestClient::del(const std::string& url)
     if(RestClient::user_pass.length()>0){
       curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
       curl_easy_setopt(curl, CURLOPT_USERPWD, RestClient::user_pass.c_str());
+    }
+    // Add custom headers if we have them.
+    if (!RestClient::custom_headers.empty()) {
+      set_curl_custom_headers(curl);
     }
     /** set user agent */
     curl_easy_setopt(curl, CURLOPT_USERAGENT, RestClient::user_agent);
@@ -365,4 +400,19 @@ size_t RestClient::read_callback(void *data, size_t size, size_t nmemb,
   u->data += copy_size;
   /** return copied size */
   return copy_size;
+}
+
+void RestClient::set_curl_custom_headers(CURL *curl) {
+  if (!RestClient::custom_headers.empty()) {
+    struct curl_slist *custom_headers_curl;
+    typedef headermap::const_iterator hm_iter_type;
+    std::string header;
+
+    for (hm_iter_type i = RestClient::custom_headers.begin(); i != RestClient::custom_headers.end(); i++) {
+      header = i->first + ": " + i->second;
+      custom_headers_curl = curl_slist_append(custom_headers_curl, header.c_str());
+    }
+
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, custom_headers_curl);
+  }
 }

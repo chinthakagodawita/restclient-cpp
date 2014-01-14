@@ -42,6 +42,10 @@ class RestClient
     // Auth
     static void clearAuth();
     static void setAuth(const std::string& user,const std::string& password);
+    // Custom headers
+    static void clearCustomHeaders();
+    static void setCustomHeaders(const headermap& headers);
+    static void addCustomHeader(const std::string& key, const std::string& value);
     // HTTP GET
     static response get(const std::string& url);
     // HTTP POST
@@ -66,6 +70,10 @@ class RestClient
                                 void *userdata);
     static const char* user_agent;
     static std::string user_pass;
+    static RestClient::headermap custom_headers;
+
+    // Adds any set custom headers to CURL.
+    static void set_curl_custom_headers(CURL *curl);
 
     // trim from start
     static inline std::string &ltrim(std::string &s) {
