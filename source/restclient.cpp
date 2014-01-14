@@ -409,7 +409,7 @@ void RestClient::set_curl_custom_headers(CURL *curl) {
     typedef headermap::const_iterator hm_iter_type;
     struct curl_slist *custom_headers_curl = NULL;
 
-    for (hm_iter_type i = RestClient::custom_headers.begin(); i != RestClient::custom_headers.end(); i++) {
+    for (hm_iter_type i = RestClient::custom_headers.begin(); i != RestClient::custom_headers.end(); ++i) {
       header = i->first + ": " + i->second;
       custom_headers_curl = curl_slist_append(custom_headers_curl, header.c_str());
     }
